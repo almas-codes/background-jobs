@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using BackgroundJobs.Abstractions.Models;
 using BackgroundJobs.Abstractions.Storage;
 
-namespace BackgroundJobs.Storage.InMemory.Provider;
+namespace BackgroundJobs.Storage.InMemory;
 
 public class InMemoryJobStorage : IJobStorage, IDisposable
 {

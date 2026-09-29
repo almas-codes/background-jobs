@@ -1,115 +1,85 @@
-# BackgroundJobs - Lightweight .NET Job System
+# BackgroundJobs ??
 
-<p align="center">
-  <img src="https://img.shields.io/badge/.NET-9.0-512BD4?style=for-the-badge&logo=dotnet" alt=".NET 9.0" />
-  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge" alt="License" />
-</p>
+A ridiculously lightweight, extremely fast .NET 10 background job processing engine. 
 
-**BackgroundJobs** is a high-performance, lightweight .NET background job processing system. Designed as a simpler, faster alternative to Hangfire and Quartz.NET for modern ASP.NET Core applications that need powerful background processing without the bloat of a massive infrastructure stack.
+I built **BackgroundJobs** because I was tired of massive, complex dependencies just to fire off a simple async task in the background. If you've ever thought *"I just want to run this method in the background without setting up a dedicated worker service or pulling in a giant scheduling framework"*, this is exactly what you've been looking for.
 
-Whether you need **delayed jobs**, **recurring tasks**, **automatic retries with exponential backoff**, or **persistent queues**, BackgroundJobs delivers a robust, strongly-typed API tailored for scale.
+No massive tables. No bloated dependencies. Just pure, strongly-typed execution.
 
-## ?? Key Features (SEO Optimized for .NET Background Tasks)
-* **Fire-and-Forget Jobs**: Execute tasks asynchronously in the background.
-* **Delayed & Scheduled Jobs**: Schedule tasks to execute at a precise time in the future.
-* **Strongly-Typed Expression API**: Enqueue jobs using elegant lambda expressions (e.g., client.EnqueueAsync<IEmailService>(x => x.Send(userId))). No magic strings!
-* **Automatic Retries & Exponential Backoff**: Built-in resilience for transient failures.
-* **High Concurrency & Thread-Safe**: Utilizes PostgreSQL's advanced FOR UPDATE SKIP LOCKED mechanism to prevent deadlocks and guarantee safe execution across horizontally scaled microservices.
-* **Multiple Storage Providers**: Ships with **InMemory** (for testing/dev) and **PostgreSQL** (production-ready). Extensible for SQL Server, Redis, and MySQL.
-* **Dead-Letter Queues**: Automatically segregates permanently failed jobs.
-* **Zero Configuration Initialization**: Automatically creates and migrates necessary database tables on startup.
+## Why This Exists (And Why You Should Use It)
 
-## ?? Installation
+- **Zero Friction Setup**: Add the package, register AddBackgroundJobs(), and you're done. Out of the box, it uses an ultra-fast InMemory storage with built-in garbage collection that absolutely will not leak RAM.
+- **Strongly-Typed Magic**: Forget magic strings and reflection nightmares. Enqueue jobs natively with lambda expressions: client.EnqueueAsync<IEmailService>(x => x.Send("almas")).
+- **PostgreSQL Scale**: When you're ready to scale horizontally, swap to the PostgreSQL provider. It natively leverages PostgreSQL's advanced SKIP LOCKED queries, guaranteeing your background workers will never deadlock or execute the same job twice, no matter how many microservices you run.
+- **Automatic Resilience**: Every job is protected by a built-in exponential backoff engine. If your API call fails, it automatically retries safely.
 
-This repository is structured cleanly with Central Package Management. To get started, clone the repository and add the core packages to your ASP.NET Core project:
+## Quick Start ?
+
+### 1. Add to your ASP.NET Core Project
 
 `ash
-dotnet add reference src/BackgroundJobs.Core
-dotnet add reference src/BackgroundJobs.Storage.PostgreSQL
-dotnet add reference src/BackgroundJobs.DependencyInjection
+# Add the core engine
+dotnet add package BackgroundJobs
+
+# (Optional) Add PostgreSQL storage for production
+dotnet add package BackgroundJobs.Storage.PostgreSQL
 `
 
-## ??? Quick Start Guide
-
-### 1. Configure Services in Program.cs
-Register the BackgroundJobs engine and choose your storage provider.
+### 2. Configure Program.cs
 
 `csharp
 using BackgroundJobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Register the engine
 builder.Services.AddBackgroundJobs(options =>
 {
-    // Use high-performance PostgreSQL storage
-    options.UsePostgreSqlStorage("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=backgroundjobs_db");
+    // The perfect default for local development. Flat RAM profile guaranteed.
+    options.UseInMemoryStorage();
     
-    // OR use InMemory storage for local testing
-    // options.UseInMemoryStorage();
+    // Ready for production? Swap it to Postgres instantly:
+    // options.UsePostgreSqlStorage("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=jobs");
 });
 
-// Register your business logic services
+// Don't forget to register the services your jobs will use!
 builder.Services.AddTransient<IEmailService, EmailService>();
 
 var app = builder.Build();
 app.Run();
 `
 
-### 2. Enqueue Background Tasks seamlessly
-Inject the IBackgroundJobClient anywhere in your application (Controllers, Minimal APIs, MediatR Handlers) to dispatch work.
+### 3. Dispatch Jobs from Anywhere
+
+Inject IBackgroundJobClient into your Controllers, Minimal APIs, or MediatR handlers.
 
 `csharp
-app.MapPost("/users/register", async (IBackgroundJobClient jobClient, string userId) => 
+app.MapPost("/users/register", async (IBackgroundJobClient jobs, string userId) => 
 {
-    // 1. Fire-and-Forget Job (Executes instantly in the background)
-    await jobClient.EnqueueAsync<IEmailService>(service => service.SendWelcomeEmailAsync(userId));
+    // ?? Fire-and-Forget (Runs immediately in the background)
+    await jobs.EnqueueAsync<IEmailService>(x => x.SendWelcomeEmailAsync(userId));
 
-    // 2. Delayed Job (Executes after 15 minutes)
-    await jobClient.ScheduleAsync<IEmailService>(
-        service => service.SendFollowUpEmailAsync(userId), 
+    // ?? Scheduled (Runs precisely 15 minutes from now)
+    await jobs.ScheduleAsync<IEmailService>(
+        x => x.SendFollowUpEmailAsync(userId), 
         TimeSpan.FromMinutes(15));
         
-    return Results.Ok("User registered and background tasks queued!");
+    return Results.Ok("User registered! Background tasks are queued.");
 });
 `
 
-## ??? Architecture & How to Extend
+## Contributing & Extending
 
-This project is built using Senior Architect-level SOLID principles. The architecture is strictly decoupled into distinct layers:
+I intentionally kept the architecture strictly decoupled and clean. If you want to dive in and add features, here's how the repo is structured:
 
-* **BackgroundJobs.Abstractions**: Core models, enums (JobStatus), and interfaces (IJobClient, IJobStorage).
-* **BackgroundJobs.Core**: The background worker daemon (BackgroundJobWorker : BackgroundService), the expression tree decompiler (MethodCallInspector), and retry policies.
-* **BackgroundJobs.Storage.***: Pluggable storage providers.
+- **BackgroundJobs**: This single, consolidated project contains the IBackgroundJobClient, the strongly-typed expression parsers, the background IHostedService worker daemon, and the InMemory implementation. 
+- **BackgroundJobs.Storage.PostgreSQL**: The robust Dapper-powered Postgres implementation. It's fully plug-and-play.
 
-### How to Add a New Storage Provider (e.g., Redis or SQL Server)
-1. Create a new Class Library (e.g., BackgroundJobs.Storage.Redis).
-2. Add a reference to BackgroundJobs.Abstractions.
-3. Implement the IJobStorage interface. You must handle EnqueueAsync, DequeueAsync (ensure thread-safety!), CompleteAsync, and FailAsync.
-4. Create an extension method in BackgroundJobs.DependencyInjection to register your provider:
-   `csharp
-   public static void UseRedisStorage(this BackgroundJobsOptions options, string connectionString)
-   {
-       options.HasStorageConfigured = true;
-       options.Services.AddSingleton<IJobStorage>(new RedisJobStorage(connectionString));
-   }
-   `
+### Writing a Custom Storage Provider
+Want to back this with Redis, SQL Server, or MongoDB? Just implement IJobStorage! You need to handle EnqueueAsync, thread-safe DequeueAsync, CompleteAsync, and FailAsync. That's it. 
 
-### How to Add New Core Features
-* **Recurring Jobs (Cron)**: Extend IBackgroundJobClient with AddOrUpdateRecurringJob. Modify BackgroundJobWorker to poll a RecurringJobs table and enqueue instances based on cron schedules (using libraries like Cronos).
-* **Dashboard / UI**: Build a Razor Class Library (BackgroundJobs.Dashboard) that injects IJobStorage and calls .GetJobsAsync() to visualize the queue in real-time.
-
-## ?? Testing
-The project includes comprehensive xUnit test coverage. The engine is easily mockable.
-
-`csharp
-// Mocking the job client in your unit tests
-var mockClient = new Mock<IBackgroundJobClient>();
-await myController.RegisterUser(mockClient.Object, "user-123");
-
-// Verify job was queued
-mockClient.Verify(x => x.EnqueueAsync<IEmailService>(s => s.SendWelcomeEmailAsync("user-123")), Times.Once);
-`
+### Tests
+We love testable code. The entire engine is covered by xUnit. You can easily mock IBackgroundJobClient in your own unit tests to verify your code is queueing the correct methods without actually executing them.
 
 ---
-*Developed with focus on zero-allocations, high throughput, and developer ergonomics. The ultimate open-source .NET task scheduling library.*
+*Built with ?? for the .NET community by Almas Khan.*

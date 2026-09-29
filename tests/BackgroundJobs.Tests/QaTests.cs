@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using BackgroundJobs.Abstractions.Models;
 using BackgroundJobs.Abstractions.Storage;
 using BackgroundJobs.Core.Client;
-using BackgroundJobs.Storage.InMemory.Provider;
+using BackgroundJobs.Storage.InMemory;
 using FluentAssertions;
 using Xunit;
 

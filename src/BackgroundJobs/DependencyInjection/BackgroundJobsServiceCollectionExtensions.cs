@@ -3,7 +3,7 @@ using BackgroundJobs.Abstractions.Client;
 using BackgroundJobs.Abstractions.Storage;
 using BackgroundJobs.Core.Client;
 using BackgroundJobs.Core.Worker;
-using BackgroundJobs.Storage.InMemory.Provider;
+using BackgroundJobs.Storage.InMemory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BackgroundJobs;

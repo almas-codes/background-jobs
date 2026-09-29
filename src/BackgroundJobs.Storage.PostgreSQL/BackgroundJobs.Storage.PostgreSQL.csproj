@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\BackgroundJobs.Abstractions\BackgroundJobs.Abstractions.csproj" />
-    <ProjectReference Include="..\BackgroundJobs.DependencyInjection\BackgroundJobs.DependencyInjection.csproj" />
+    
+    <ProjectReference Include="..\BackgroundJobs\BackgroundJobs.csproj" />
   </ItemGroup>
 
   <ItemGroup>
