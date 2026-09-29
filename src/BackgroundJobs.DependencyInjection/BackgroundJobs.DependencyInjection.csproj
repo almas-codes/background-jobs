@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\BackgroundJobs.Core\BackgroundJobs.Core.csproj" />
+    <ProjectReference Include="..\BackgroundJobs.Storage.InMemory\BackgroundJobs.Storage.InMemory.csproj" />
+    <ProjectReference Include="..\BackgroundJobs.Dashboard\BackgroundJobs.Dashboard.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    
+    
+    
+  </PropertyGroup>
+
+</Project>

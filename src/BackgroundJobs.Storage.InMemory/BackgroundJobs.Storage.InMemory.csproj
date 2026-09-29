@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\BackgroundJobs.Abstractions\BackgroundJobs.Abstractions.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    
+    
+    
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\BackgroundJobs.Abstractions\BackgroundJobs.Abstractions.csproj" />
+    <ProjectReference Include="..\BackgroundJobs.DependencyInjection\BackgroundJobs.DependencyInjection.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" />
+    <PackageReference Include="Npgsql" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    
+    
+    
+  </PropertyGroup>
+
+</Project>

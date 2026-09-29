@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BackgroundJobs.Abstractions/BackgroundJobs.Abstractions.csproj" />
+    <Project Path="src/BackgroundJobs.Core/BackgroundJobs.Core.csproj" />
+    <Project Path="src/BackgroundJobs.Dashboard/BackgroundJobs.Dashboard.csproj" />
+    <Project Path="src/BackgroundJobs.DependencyInjection/BackgroundJobs.DependencyInjection.csproj" />
+    <Project Path="src/BackgroundJobs.Sample.Web/BackgroundJobs.Sample.Web.csproj" />
+    <Project Path="src/BackgroundJobs.Storage.InMemory/BackgroundJobs.Storage.InMemory.csproj" />
+    <Project Path="src/BackgroundJobs.Storage.PostgreSQL/BackgroundJobs.Storage.PostgreSQL.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/BackgroundJobs.Tests/BackgroundJobs.Tests.csproj" />
+  </Folder>
+</Solution>
