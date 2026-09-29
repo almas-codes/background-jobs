@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsAspireComponent>false</IsAspireComponent>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BackgroundJobs.Abstractions\BackgroundJobs.Abstractions.csproj" />
+  </ItemGroup>
+</Project>

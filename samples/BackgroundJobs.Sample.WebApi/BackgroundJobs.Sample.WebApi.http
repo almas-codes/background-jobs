@@ -1,0 +1,6 @@
+@BackgroundJobs.Sample.WebApi_HostAddress = http://localhost:5180
+
+GET {{BackgroundJobs.Sample.WebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

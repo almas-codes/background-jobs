@@ -1,29 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    
-    
-    
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" />
-    <PackageReference Include="FluentAssertions" />
+    <ProjectReference Include="..\..\src\BackgroundJobs.Core\BackgroundJobs.Core.csproj" />
+    <ProjectReference Include="..\..\src\BackgroundJobs.Storage.InMemory\BackgroundJobs.Storage.InMemory.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Moq" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="FluentAssertions" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Xunit" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\BackgroundJobs\BackgroundJobs.csproj" />
-    
-    <ProjectReference Include="..\..\src\BackgroundJobs.Storage.PostgreSQL\BackgroundJobs.Storage.PostgreSQL.csproj" />
-  </ItemGroup>
-
 </Project>

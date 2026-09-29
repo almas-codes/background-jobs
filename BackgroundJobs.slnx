@@ -1,8 +1,13 @@
 <Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/BackgroundJobs.Sample.WebApi/BackgroundJobs.Sample.WebApi.csproj" />
+  </Folder>
   <Folder Name="/src/">
-    <Project Path="src/BackgroundJobs.Sample.Web/BackgroundJobs.Sample.Web.csproj" />
-    <Project Path="src/BackgroundJobs.Storage.PostgreSQL/BackgroundJobs.Storage.PostgreSQL.csproj" />
-    <Project Path="src/BackgroundJobs/BackgroundJobs.csproj" />
+    <Project Path="src/BackgroundJobs.Abstractions/BackgroundJobs.Abstractions.csproj" />
+    <Project Path="src/BackgroundJobs.Core/BackgroundJobs.Core.csproj" />
+    <Project Path="src/BackgroundJobs.Dashboard/BackgroundJobs.Dashboard.csproj" />
+    <Project Path="src/BackgroundJobs.Storage.InMemory/BackgroundJobs.Storage.InMemory.csproj" />
+    <Project Path="src/BackgroundJobs.Storage.PostgreSql/BackgroundJobs.Storage.PostgreSql.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/BackgroundJobs.Tests/BackgroundJobs.Tests.csproj" />
