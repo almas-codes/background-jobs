@@ -1,4 +1,4 @@
-# BackgroundJobs ??
+﻿# BackgroundJobs 🚀
 
 A ridiculously lightweight, extremely fast .NET 10 background job processing engine. 
 
@@ -13,7 +13,7 @@ No massive tables. No bloated dependencies. Just pure, strongly-typed execution.
 - **PostgreSQL Scale**: When you're ready to scale horizontally, swap to the PostgreSQL provider. It natively leverages PostgreSQL's advanced SKIP LOCKED queries, guaranteeing your background workers will never deadlock or execute the same job twice, no matter how many microservices you run.
 - **Automatic Resilience**: Every job is protected by a built-in exponential backoff engine. If your API call fails, it automatically retries safely.
 
-## Quick Start ?
+## Quick Start ⚡
 
 ### 1. Add to your ASP.NET Core Project
 
@@ -42,29 +42,46 @@ builder.Services.AddBackgroundJobs(options =>
     // options.UsePostgreSqlStorage("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=jobs");
 });
 
-// Don't forget to register the services your jobs will use!
-builder.Services.AddTransient<IEmailService, EmailService>();
-
 var app = builder.Build();
 app.Run();
 `
 
-### 3. Dispatch Jobs from Anywhere
+### 3. Define Your Job
 
-Inject IBackgroundJobClient into your Controllers, Minimal APIs, or MediatR handlers.
+To add a new background job, all you need to do is create a standard C# class and register it in your dependency injection container. There are no special interfaces you are forced to inherit from!
 
 `csharp
-app.MapPost("/users/register", async (IBackgroundJobClient jobs, string userId) => 
+// 1. Create your job logic
+public class ImageProcessingService 
 {
-    // ?? Fire-and-Forget (Runs immediately in the background)
-    await jobs.EnqueueAsync<IEmailService>(x => x.SendWelcomeEmailAsync(userId));
+    public async Task ResizeImageAsync(string imageId, int width, int height) 
+    {
+        // Your heavy background logic goes here
+        await Task.Delay(5000); 
+    }
+}
 
-    // ?? Scheduled (Runs precisely 15 minutes from now)
-    await jobs.ScheduleAsync<IEmailService>(
-        x => x.SendFollowUpEmailAsync(userId), 
+// 2. Register it in Program.cs
+builder.Services.AddTransient<ImageProcessingService>();
+`
+
+### 4. Dispatch Jobs from Anywhere
+
+Inject IBackgroundJobClient into your Controllers, Minimal APIs, or MediatR handlers. The engine will safely serialize your method arguments and execute them in the background!
+
+`csharp
+app.MapPost("/images/upload", async (IBackgroundJobClient jobs, string imageId) => 
+{
+    // 🔥 Fire-and-Forget (Runs immediately in the background)
+    await jobs.EnqueueAsync<ImageProcessingService>(
+        x => x.ResizeImageAsync(imageId, 800, 600));
+
+    // 🕒 Scheduled (Runs precisely 15 minutes from now)
+    await jobs.ScheduleAsync<ImageProcessingService>(
+        x => x.ResizeImageAsync(imageId, 800, 600), 
         TimeSpan.FromMinutes(15));
         
-    return Results.Ok("User registered! Background tasks are queued.");
+    return Results.Ok("Upload complete! Image is being resized in the background.");
 });
 `
 
@@ -82,4 +99,4 @@ Want to back this with Redis, SQL Server, or MongoDB? Just implement IJobStorage
 We love testable code. The entire engine is covered by xUnit. You can easily mock IBackgroundJobClient in your own unit tests to verify your code is queueing the correct methods without actually executing them.
 
 ---
-*Built with ?? for the .NET community by Almas Khan.*
+*Built with ❤️ for the .NET community by Almas Khan.*
