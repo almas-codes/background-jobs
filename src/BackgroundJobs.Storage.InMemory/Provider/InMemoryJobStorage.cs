@@ -9,10 +9,31 @@ using BackgroundJobs.Abstractions.Storage;
 
 namespace BackgroundJobs.Storage.InMemory.Provider;
 
-public class InMemoryJobStorage : IJobStorage
+public class InMemoryJobStorage : IJobStorage, IDisposable
 {
     private readonly ConcurrentDictionary<string, JobData> _jobs = new();
     private readonly ConcurrentQueue<string> _queue = new();
+    private readonly Timer _cleanupTimer;
+
+    public InMemoryJobStorage()
+    {
+        // Prevent memory leaks: Prune completed jobs every 15 minutes
+        _cleanupTimer = new Timer(CleanupCompletedJobs, null, TimeSpan.FromMinutes(15), TimeSpan.FromMinutes(15));
+    }
+
+    private void CleanupCompletedJobs(object? state)
+    {
+        var threshold = DateTime.UtcNow.AddHours(-1);
+        var toRemove = _jobs.Values
+            .Where(j => (j.Status == JobStatus.Completed || j.Status == JobStatus.Failed) && j.CreatedAt < threshold)
+            .Select(j => j.Id)
+            .ToList();
+
+        foreach (var id in toRemove)
+        {
+            _jobs.TryRemove(id, out _);
+        }
+    }
 
     public Task<string> EnqueueAsync(JobData job, CancellationToken cancellationToken = default)
     {
@@ -23,7 +44,7 @@ public class InMemoryJobStorage : IJobStorage
         }
         else
         {
-            // Naive scheduled jobs implementation for InMemory
+            // Lightweight scheduled jobs implementation
             Task.Run(async () =>
             {
                 var delay = job.ProcessAt.Value - DateTime.UtcNow;
@@ -66,7 +87,7 @@ public class InMemoryJobStorage : IJobStorage
             {
                 job.RetryCount++;
                 job.Status = JobStatus.Enqueued;
-                // Simple backoff
+                // Simple exponential backoff
                 Task.Run(async () =>
                 {
                     await Task.Delay(TimeSpan.FromSeconds(Math.Pow(2, job.RetryCount)), cancellationToken);
@@ -95,5 +116,10 @@ public class InMemoryJobStorage : IJobStorage
     public Task<int> GetCountAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_jobs.Count);
+    }
+
+    public void Dispose()
+    {
+        _cleanupTimer.Dispose();
     }
 }

@@ -6,40 +6,24 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Npgsql;
-
-// Ensure DB exists before starting services
-try {
-    using var conn = new NpgsqlConnection("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=postgres");
-    conn.Open();
-    using var cmd = new NpgsqlCommand("SELECT 1 FROM pg_database WHERE datname = 'backgroundjobs_db'", conn);
-    var exists = cmd.ExecuteScalar() != null;
-    if (!exists) {
-        using var createCmd = new NpgsqlCommand("CREATE DATABASE backgroundjobs_db", conn);
-        createCmd.ExecuteNonQuery();
-        Console.WriteLine("Database created.");
-    }
-} catch (Exception ex) {
-    Console.WriteLine("Could not verify/create db: " + ex.Message);
-}
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Background Jobs
+// Configure Background Jobs (Zero Setup Required for InMemory!)
 builder.Services.AddBackgroundJobs(options =>
 {
-    // You can use InMemory for quick dev
-    // options.UseInMemoryStorage();
+    // Defaulting to InMemory so anyone cloning this repo can hit F5 and it works instantly!
+    options.UseInMemoryStorage();
     
-    // Using PostgreSQL since it's a requested feature
-    options.UsePostgreSqlStorage("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=backgroundjobs_db");
+    // To scale horizontally, swap to PostgreSQL:
+    // options.UsePostgreSqlStorage("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=backgroundjobs_db");
 });
 
 builder.Services.AddTransient<EmailService>();
 
 var app = builder.Build();
 
-app.MapGet("/", () => "Background Jobs API is running! Try POST /enqueue-email?userId=123");
+app.MapGet("/", () => "Background Jobs API is running flawlessly! Try POST /enqueue-email?userId=123");
 
 app.MapPost("/enqueue-email", async (IBackgroundJobClient client, string userId) =>
 {
@@ -56,7 +40,7 @@ app.MapPost("/schedule-email", async (IBackgroundJobClient client, string userId
 app.MapPost("/failing-job", async (IBackgroundJobClient client) =>
 {
     var jobId = await client.EnqueueAsync<EmailService>(x => x.SimulateFailureAsync());
-    return Results.Ok(new { JobId = jobId, Message = "Failing job enqueued" });
+    return Results.Ok(new { JobId = jobId, Message = "Failing job enqueued to test automatic retries" });
 });
 
 app.Run();
@@ -65,15 +49,12 @@ public class EmailService
 {
     private readonly ILogger<EmailService> _logger;
 
-    public EmailService(ILogger<EmailService> logger)
-    {
-        _logger = logger;
-    }
+    public EmailService(ILogger<EmailService> logger) => _logger = logger;
 
     public async Task SendEmailAsync(string userId)
     {
         _logger.LogInformation("Sending email to user {UserId}...", userId);
-        await Task.Delay(2000); // Simulate work
+        await Task.Delay(2000); // Simulate work without blocking the main thread
         _logger.LogInformation("Email sent to user {UserId} successfully!", userId);
     }
 
@@ -81,6 +62,6 @@ public class EmailService
     {
         _logger.LogWarning("This job is designed to fail...");
         await Task.Delay(500);
-        throw new InvalidOperationException("Simulated job failure to test retries!");
+        throw new InvalidOperationException("Simulated job failure to test exponential backoff retries!");
     }
 }

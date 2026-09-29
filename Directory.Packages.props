@@ -10,7 +10,7 @@
     <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.0" />
     <PackageVersion Include="Npgsql" Version="9.0.2" />
     <PackageVersion Include="Dapper" Version="2.1.35" />
-    <PackageVersion Include="System.Text.Json" Version="9.0.0" />
+    
     
     <!-- Testing -->
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
